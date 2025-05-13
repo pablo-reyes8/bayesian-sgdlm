@@ -9,25 +9,25 @@ This script implements the Simultaneous Graphical DLM (SGDLM) of West & Harrison
 
 1. **Data & Configuration**  
    - Load your multivariate time series $Y$ and specify the contemporaneous graph mask.  
-   - Set lag order $p$, pandemic dummy horizon, Minnesota‐prior hyperparameters, discount factors $\phi,\gamma$, and Monte Carlo draws $R$.
+   - Set lag order $p$, pandemic dummy horizon, Minnesota‐prior hyperparameters, and Monte Carlo draws $R$.
 
 2. **Design & Prior Setup**  
    - Construct lagged and dummy‐augmented regressor matrices for each series.  
    - Compute AR(1) empirical moments and assemble Minnesota‐style priors for all coefficient blocks.
 
-3. **Decoupling: Parallel DLM Updates**  
-   - Run independent univariate DLM filters for each series—incorporating own‐ and cross‐lags plus exogenous dummies.  
-   - Obtain one‐step forecast gains, updated state means/covariances, and sample noise precisions.
-
-4. **Recoupling & VB-IS Refinement**  
+3. **Recoupling & VB-IS Refinement**  
    - Fuse marginal DLM outputs via sparse Monte Carlo draws under the graph mask.  
    - Compute VB moment updates (covariance, Mahalanobis traces, degrees of freedom, scales) using importance weights.  
    - Iterate coordinate VB and importance‐sampling corrections as needed.
 
+4. **Decoupling: Parallel DLM Updates**  
+   - Run independent univariate DLM filters for each series—incorporating own‐ and cross‐lags plus exogenous dummies.  
+   - Obtain one‐step forecast gains, updated state means/covariances, and sample noise precisions.
+
 5. **Results & Diagnostics**  
    - Reconstruct time‐varying VAR coefficient matrices and error covariance.  
    - Plot trace/histograms of precision chains, forecast densities.  
-   - Unconditional k-step forecast out of sample 
+   - Unconditional k-step out-of-sample forecasts. 
 
 ---
 
