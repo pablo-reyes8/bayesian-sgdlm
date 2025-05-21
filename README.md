@@ -48,4 +48,13 @@ pip install pandas numpy scipy matplotlib
 ## References
 
 - West, M. & Harrison, J. (1997). *Bayesian Forecasting and Dynamic Models*. Springer.  
-- Gruber, E. & West, M. (2016). “GPU‐Accelerated Bayesian Learning and Forecasting in SGDLM.” *Bayesian Analysis* 11(3): 205–225.  
+- Gruber, E. & West, M. (2016). “GPU‐Accelerated Bayesian Learning and Forecasting in SGDLM.” *Bayesian Analysis* 11(3): 205–225.
+
+## Contributing
+
+Contributions are welcome! Please open issues or submit pull requests at  
+https://github.com/pablo-reyes8
+
+## License
+
+This project is licensed under the Apache License 2.0.  
