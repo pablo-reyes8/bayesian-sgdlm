@@ -1,5 +1,11 @@
 # Simultaneous Graphical DLM 
 
+![Repo size](https://img.shields.io/github/repo-size/pablo-reyes8/bayesian-sgdlm)
+![Last commit](https://img.shields.io/github/last-commit/pablo-reyes8/bayesian-sgdlm)
+![Open issues](https://img.shields.io/github/issues/pablo-reyes8/bayesian-sgdlm)
+![Forks](https://img.shields.io/github/forks/pablo-reyes8/bayesian-sgdlm?style=social)
+![Stars](https://img.shields.io/github/stars/pablo-reyes8/bayesian-sgdlm?style=social)
+
 This script implements the Simultaneous Graphical DLM (SGDLM) of West & Harrison (1997) and Gruber & West (2016), extended so each DLM model stacks its own $p$ lags **and** the $p\$ cross-lags of all other series. This notebook walks through every step, from data prep to reconstructing the final dynamic VAR coefficients, using a decouple–recouple Variational Bayes + importance-sampling algorithm.
 
 
