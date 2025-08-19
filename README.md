@@ -43,11 +43,34 @@ This script implements the Simultaneous Graphical DLM (SGDLM) of West & Harrison
 pip install pandas numpy scipy matplotlib 
 ```
 
-## How to Use
-
-1. Open `bayesian_sgdlm.ipynb` in Jupyter Notebook or JupyterLab.  
-2. Run all cells in order to reproduce the full pipeline.  
+### Option 1 — Notebook (all-in-one)  
+1. Open **`bayesian_sgdlm.ipynb`** in Jupyter Notebook or JupyterLab.  
+2. Run all cells in order to reproduce the **full pipeline end-to-end**.  
+   - This includes priors, dummies, matrices, decoupling/recoupling, MCMC, and forecasting.  
 3. Modify the **Parameters** cell (lags, dummies, λ, φ, γ, $R$, priors...) to experiment.  
+
+👉 This notebook is ideal for people who like to see the entire workflow executed in a single run, without having to navigate between modules.  
+
+---
+
+### Option 2 — Modular Code (from `src/`)  
+For users who prefer **modular code organization**, the implementation is structured under the `src/` folder:  
+
+src/
+├─ decouple_recouple.py # decoupling/recoupling steps, n_solve, s_sol
+├─ dummies.py # covid_dummy and related
+├─ forecast.py # forecasting routines (u_forecast, osf, us)
+├─ matrices.py # Fj_matrix, Wjmatrix, A_matrix, etc.
+├─ mcmc.py # mcmc_forward
+├─ priors.py # prior_AM_pp, full_size, complete_AP
+├─ proxies.py # proxy updates (proxy_lambdj, proxy_theta_j2, etc.)
+
+Each file contains the corresponding building blocks, so you can import only the parts you need: 
+
+```python
+from src.matrices import Fj_matrix
+from src.forecast import u_forecast
+```
 
 ---
 
