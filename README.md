@@ -42,6 +42,9 @@ This script implements the Simultaneous Graphical DLM (SGDLM) of West & Harrison
 ```bash
 pip install pandas numpy scipy matplotlib 
 ```
+---
+
+## How to Use
 
 ### Option 1 — Notebook (all-in-one)  
 1. Open **`bayesian_sgdlm.ipynb`** in Jupyter Notebook or JupyterLab.  
