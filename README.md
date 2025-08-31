@@ -59,6 +59,7 @@ pip install pandas numpy scipy matplotlib
 ### Option 2 — Modular Code (from `src/`)  
 For users who prefer **modular code organization**, the implementation is structured under the `src/` folder:  
 
+```plaintext
 src/
 ├─ decouple_recouple.py # decoupling/recoupling steps, n_solve, s_sol
 ├─ dummies.py # covid_dummy and related
@@ -67,6 +68,7 @@ src/
 ├─ mcmc.py # mcmc_forward
 ├─ priors.py # prior_AM_pp, full_size, complete_AP
 ├─ proxies.py # proxy updates (proxy_lambdj, proxy_theta_j2, etc.)
+```
 
 Each file contains the corresponding building blocks, so you can import only the parts you need: 
 
