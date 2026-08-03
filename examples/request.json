@@ -1,0 +1,6 @@
+{
+  "data": [[0.1, 0.2], [0.2, 0.1], [0.25, 0.12], [0.3, 0.15]],
+  "parents": [[false, true], [true, false]],
+  "series_names": ["output", "inflation"],
+  "config": {"lags": 1, "draws": 100, "seed": 42}
+}

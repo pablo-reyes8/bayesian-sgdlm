@@ -1,0 +1,6 @@
+{
+  "horizon": 12,
+  "simulations": 1000,
+  "credible_level": 0.9,
+  "include_simulations": false
+}

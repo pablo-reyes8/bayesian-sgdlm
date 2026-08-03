@@ -1,0 +1,8 @@
+forecast:
+  model: artifacts/model.npz
+  horizon: 12
+  simulations: 1000
+  credible_level: 0.9
+  seed: 42
+  output: artifacts/forecast.json
+  include_simulations: false

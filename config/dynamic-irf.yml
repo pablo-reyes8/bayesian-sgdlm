@@ -1,0 +1,9 @@
+irf:
+  model: artifacts/model.npz
+  horizon: 12
+  impulse: Inflacion_month
+  dynamic: true
+  smoothing: gaussian
+  smooth_window: 7
+  shock_scale: innovation_sd
+  output: artifacts/dynamic-irf.json

@@ -1,0 +1,8 @@
+{
+  "horizon": 12,
+  "impulse": "inflation",
+  "mode": "dynamic",
+  "shock_scale": "innovation_sd",
+  "smoothing": "gaussian",
+  "smooth_window": 7
+}

@@ -1,0 +1,14 @@
+data:
+  input: data/DATA.xlsx
+  columns: [Prod_man, Desempleo_des, Inflacion_month, TPM_month, Tcap_month, Tcol_month]
+  exog_columns: []
+  parents: examples/parents.json
+model:
+  lags: 3
+  draws: 500
+  beta: 0.945
+  delta_state: 0.975
+  delta_parent: 0.98
+  seed: 42
+output:
+  model: artifacts/model.npz

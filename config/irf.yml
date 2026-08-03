@@ -1,0 +1,9 @@
+irf:
+  model: artifacts/model.npz
+  horizon: 12
+  impulse: Inflacion_month
+  dynamic: false
+  draws: 500
+  credible_level: 0.9
+  shock_scale: innovation_sd
+  output: artifacts/irf.json

@@ -1,94 +1,175 @@
-# Simultaneous Graphical DLM 
+# Bayesian SGDLM
 
-![Repo size](https://img.shields.io/github/repo-size/pablo-reyes8/bayesian-sgdlm)
-![Last commit](https://img.shields.io/github/last-commit/pablo-reyes8/bayesian-sgdlm)
-![Open issues](https://img.shields.io/github/issues/pablo-reyes8/bayesian-sgdlm)
-![Forks](https://img.shields.io/github/forks/pablo-reyes8/bayesian-sgdlm?style=social)
-![Stars](https://img.shields.io/github/stars/pablo-reyes8/bayesian-sgdlm?style=social)
+[![CI](https://github.com/pablo-reyes8/bayesian-sgdlm/actions/workflows/ci.yml/badge.svg)](https://github.com/pablo-reyes8/bayesian-sgdlm/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
 
-This script implements the Simultaneous Graphical DLM (SGDLM) of West & Harrison (1997) and Gruber & West (2016), extended so each DLM model stacks its own $p$ lags **and** the $p\$ cross-lags of all other series. This notebook walks through every step, from data prep to reconstructing the final dynamic VAR coefficients, using a decouple–recouple Variational Bayes + importance-sampling algorithm.
+A Python implementation of the Simultaneous Graphical Dynamic Linear Model (SGDLM)
+decouple/recouple algorithm from Gruber and West (2016). It provides sequential Bayesian
+inference, posterior forecasts, static and time-varying impulse responses, a CLI, and an HTTP API.
 
+> **Status:** research software. Validate graph structure, priors, convergence diagnostics, and
+> forecast calibration for the intended application before using results in decisions.
 
----
+## Model
 
-## Notebook Outline
+For series `j`, the package estimates
 
-1. **Data & Configuration**  
-   - Load your multivariate time series $Y$ and specify the contemporaneous graph mask.  
-   - Set lag order $p$, pandemic dummy horizon, Minnesota‐prior hyperparameters, and Monte Carlo draws $R$.
+```text
+y[j,t] = x[j,t]' phi[j,t] + y[parents(j),t]' gamma[j,t] + error[j,t]
+```
 
-2. **Design & Prior Setup**  
-   - Construct lagged and dummy‐augmented regressor matrices for each series.  
-   - Compute AR(1) empirical moments and assemble Minnesota‐style priors for all coefficient blocks.
+where `x` contains an intercept, lags of every endogenous series, and optional general exogenous
+regressors. Independent normal-gamma DLM updates are recoupled with the exact
+`|I - Gamma_t|` importance weight, then approximated by variational normal-gamma margins for the
+next sequential update. The contemporaneous graph is fixed during one fit, while coefficients and
+observation precisions evolve over time.
 
-3. **Recoupling & VB-IS Refinement**  
-   - Fuse marginal DLM outputs via sparse Monte Carlo draws under the graph mask.  
-   - Compute VB moment updates (covariance, Mahalanobis traces, degrees of freedom, scales) using importance weights.  
-   - Iterate coordinate VB and importance‐sampling corrections as needed.
-
-4. **Decoupling: Parallel DLM Updates**  
-   - Run independent univariate DLM filters for each series—incorporating own‐ and cross‐lags plus exogenous dummies.  
-   - Obtain one‐step forecast gains, updated state means/covariances, and sample noise precisions.
-
-5. **Results & Diagnostics**  
-   - Reconstruct time‐varying VAR coefficient matrices and error covariance.  
-   - Plot trace/histograms of precision chains, forecast densities.  
-   - Unconditional k-step out-of-sample forecasts. 
-
----
-
-## Dependencies
+## Install
 
 ```bash
-pip install pandas numpy scipy matplotlib 
-```
----
-
-## How to Use
-
-### Option 1 — Notebook (all-in-one)  
-1. Open **`bayesian_sgdlm.ipynb`** in Jupyter Notebook or JupyterLab.  
-2. Run all cells in order to reproduce the **full pipeline end-to-end**.  
-   - This includes priors, dummies, matrices, decoupling/recoupling, MCMC, and forecasting.  
-3. Modify the **Parameters** cell (lags, dummies, λ, φ, γ, $R$, priors...) to experiment.  
-
-👉 This notebook is ideal for people who like to see the entire workflow executed in a single run, without having to navigate between modules.  
-
----
-
-### Option 2 — Modular Code (from `src/`)  
-For users who prefer **modular code organization**, the implementation is structured under the `src/` folder:  
-
-```plaintext
-src/
-├─ decouple_recouple.py # decoupling/recoupling steps, n_solve, s_sol
-├─ dummies.py # covid_dummy and related
-├─ forecast.py # forecasting routines (u_forecast, osf, us)
-├─ matrices.py # Fj_matrix, Wjmatrix, A_matrix, etc.
-├─ mcmc.py # mcmc_forward
-├─ priors.py # prior_AM_pp, full_size, complete_AP
-├─ proxies.py # proxy updates (proxy_lambdj, proxy_theta_j2, etc.)
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[dev]"
 ```
 
-Each file contains the corresponding building blocks, so you can import only the parts you need: 
+For library-only use, run `python -m pip install -e .`. Excel, API, frontend, and Parquet support
+are exposed as the `excel`, `api`, `frontend`, and `parquet` extras.
+
+## Python API
 
 ```python
-from src.matrices import Fj_matrix
-from src.forecast import u_forecast
+import numpy as np
+from sgdlm import SGDLM, SGDLMConfig
+
+y = np.loadtxt("data.csv", delimiter=",", skiprows=1)
+parents = np.array(
+    [
+        [False, True],  # series 2 is a contemporaneous parent of equation 1
+        [True, False],
+    ]
+)
+
+model = SGDLM(SGDLMConfig(lags=2, draws=1_000, seed=42))
+fit = model.fit(y, parents=parents, series_names=["output", "inflation"])
+
+forecast = model.forecast(horizon=12, simulations=2_000, credible_level=0.9)
+terminal_irf = model.impulse_response(horizon=24, impulse="output")
+dynamic_irf = model.dynamic_impulse_response(
+    horizon=12,
+    impulse="output",
+    smoothing="savgol",
+    smooth_window=7,
+)
+
+fit.save("model.sgdlm.npz")
+restored = SGDLM.load("model.sgdlm.npz")
 ```
 
----
+`forecast.mean/lower/upper` have shape `(horizon, series)`. The terminal IRF has shape
+`(horizon + 1, response_series)` and includes posterior bands.
 
-## References
+### Two IRF definitions
 
-- West, M. & Harrison, J. (1997). *Bayesian Forecasting and Dynamic Models*. Springer.  
-- Gruber, E. & West, M. (2016). “GPU‐Accelerated Bayesian Learning and Forecasting in SGDLM.” *Bayesian Analysis* 11(3): 205–225.
+`impulse_response` is the conventional terminal IRF. Each posterior draw freezes the last
+estimated `Gamma`, VAR coefficients, and precisions over the requested horizon.
 
-## Contributing
+`dynamic_impulse_response` applies a structural innovation at every in-sample origin. At horizon
+`h`, it propagates the response with the SGDLM coefficients filtered at calendar time `t + h`.
+The result is a surface with shape `(origin, horizon + 1, response_series)`. This is related in
+interpretation to time-varying local projections, but it is not an LP estimator: it preserves the
+recursive SGDLM law of motion instead of estimating a separate regression at every horizon.
 
-Contributions are welcome! Please open issues or submit pull requests at  
-https://github.com/pablo-reyes8
+Optional `moving_average`, `gaussian`, and `savgol` smoothers operate only across origins. Both
+`raw` and `smoothed` arrays are returned, so smoothing never replaces the estimated response.
+
+## Scripts and YAML
+
+Fit all numeric columns in a CSV, Excel, or Parquet file:
+
+```bash
+python scripts/fit.py data/DATA.xlsx \
+  --output artifacts/model.npz \
+  --lags 3 --draws 1000 --seed 42 \
+  --parents parents.json
+```
+
+`parents.json` is a `q x q` boolean array; entry `[j][i]` means series `i` is a contemporaneous
+parent of equation `j`. Its diagonal is always removed. Use `--columns a,b,c` and
+`--exog-columns policy_dummy,trend` to control the data roles.
+
+```bash
+python scripts/forecast.py artifacts/model.npz --horizon 12 --output artifacts/forecast.json
+python scripts/irf.py artifacts/model.npz --horizon 24 --impulse 0 --output artifacts/irf.json
+python scripts/irf.py artifacts/model.npz --horizon 12 --impulse 0 --dynamic \
+  --smoothing gaussian --smooth-window 7 --output artifacts/dynamic-irf.json
+```
+
+YAML configurations live in `config/`:
+
+```bash
+python scripts/fit.py --config config/fit.yml
+python scripts/forecast.py --config config/forecast.yml
+python scripts/irf.py --config config/irf.yml
+python scripts/irf.py --config config/dynamic-irf.yml
+```
+
+Run any script with `--help` for all options.
+
+## HTTP API
+
+```bash
+docker compose up --build
+curl http://localhost:8000/health
+curl -X POST http://localhost:8000/v1/models \
+  -H "Content-Type: application/json" \
+  --data @examples/request.json
+```
+
+Interactive OpenAPI documentation is available at `http://localhost:8000/docs`. Model fitting
+returns a UUID. Forecasts and IRFs use `/v1/models/{model_id}/forecast` and
+`/v1/models/{model_id}/irf`; artifacts are persisted in `SGDLM_MODEL_DIR` or the system temporary
+directory.
+
+## Streamlit
+
+```bash
+python scripts/serve_frontend.py
+```
+
+Open `http://localhost:8501`. The workbench supports tabular uploads, endogenous/exogenous column
+selection, contemporaneous graph editing, hyperparameters, fitting, ESS diagnostics, forecasts,
+terminal IRFs, dynamic IRFs, smoothing, and result downloads. Docker Compose starts the API and
+frontend together on ports `8000` and `8501`.
+
+## Data Contract
+
+- Rows are ordered observations; columns are series.
+- Inputs must be finite numeric values with more than `lags + 2` rows.
+- Exogenous training data must align row-for-row with endogenous data.
+- Future exogenous values are required for every forecast step when the model was fitted with them.
+- Scale variables before fitting when their magnitudes differ substantially.
+- A sparse, substantively justified parent graph is preferable to a dense graph.
+
+## Development
+
+```bash
+pytest --cov=sgdlm
+ruff check .
+ruff format --check .
+docker build -t bayesian-sgdlm .
+```
+
+The old notebook remains under `notebooks/` as provenance for the original experiment. Production
+code lives only in `src/sgdlm`; the notebook is not the package's source of truth.
+
+## Reference
+
+Gruber, L. F. and West, M. (2016). GPU-Accelerated Bayesian Learning and Forecasting in
+Simultaneous Graphical Dynamic Linear Models. *Bayesian Analysis*, 11(1), 125-149.
+[doi:10.1214/15-BA946](https://doi.org/10.1214/15-BA946). A copy is included at
+[`paper/15-BA946.pdf`](paper/15-BA946.pdf).
 
 ## License
 
-This project is licensed under the Apache License 2.0. 
+Apache License 2.0. See [LICENSE](LICENSE).

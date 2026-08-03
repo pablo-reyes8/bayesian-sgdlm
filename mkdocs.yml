@@ -1,0 +1,23 @@
+site_name: Bayesian SGDLM
+site_description: Technical documentation for the Bayesian SGDLM package
+repo_url: https://github.com/pablo-reyes8/bayesian-sgdlm
+theme:
+  name: readthedocs
+nav:
+  - Overview: index.md
+  - Model: model.md
+  - Inference: inference.md
+  - Forecasting and IRFs: forecasting-irf.md
+  - CLI and YAML: cli-yaml.md
+  - HTTP API: api.md
+  - Streamlit: frontend.md
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+strict: true
