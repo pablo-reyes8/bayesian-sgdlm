@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import tempfile
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import RLock
 from uuid import UUID, uuid4
@@ -34,7 +34,7 @@ class ModelRegistry:
 
     def create(self, result: FitResult) -> ModelRecord:
         model_id = str(uuid4())
-        created_at = datetime.now(UTC)
+        created_at = datetime.now(timezone.utc)
         result.save(self._path(model_id))
         model = SGDLM(result.config)
         model.result_ = result
@@ -53,7 +53,7 @@ class ModelRegistry:
         if not path.exists():
             raise KeyError(normalized)
         model = SGDLM.load(str(path))
-        created_at = datetime.fromtimestamp(path.stat().st_mtime, tz=UTC)
+        created_at = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
         record = ModelRecord(normalized, created_at, model)
         with self._lock:
             self._cache[normalized] = record
