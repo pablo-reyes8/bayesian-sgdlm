@@ -264,8 +264,9 @@ def _structural_components(
         for lag in range(result.config.lags):
             start = 1 + lag * n_series
             lag_matrices[lag][j] = block[start : start + n_series]
-    impact = np.linalg.inv(np.eye(n_series) - gamma)
-    return impact, [impact @ matrix for matrix in lag_matrices]
+    impact = np.asarray(np.linalg.inv(np.eye(n_series) - gamma), dtype=np.float64)
+    reduced_lags = [np.asarray(impact @ matrix, dtype=np.float64) for matrix in lag_matrices]
+    return impact, reduced_lags
 
 
 def _forecast_moments(
@@ -358,7 +359,7 @@ def _positive_definite_covariance(covariance: FloatArray) -> FloatArray:
     scale = max(float(np.max(np.abs(eigenvalues))), 1.0)
     floor = scale * 1e-12
     projected = (eigenvectors * np.maximum(eigenvalues, floor)) @ eigenvectors.T
-    return (projected + projected.T) / 2.0
+    return np.asarray((projected + projected.T) / 2.0, dtype=np.float64)
 
 
 def _covariance_cholesky(covariance: FloatArray) -> FloatArray:
@@ -366,7 +367,8 @@ def _covariance_cholesky(covariance: FloatArray) -> FloatArray:
     identity = np.eye(covariance.shape[0])
     for relative_jitter in (0.0, 1e-12, 1e-10, 1e-8, 1e-6, 1e-4):
         try:
-            return np.linalg.cholesky(covariance + identity * scale * relative_jitter)
+            factor = np.linalg.cholesky(covariance + identity * scale * relative_jitter)
+            return np.asarray(factor, dtype=np.float64)
         except np.linalg.LinAlgError:
             continue
     raise ArithmeticError("predictive covariance is numerically indefinite")

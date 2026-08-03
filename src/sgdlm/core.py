@@ -221,4 +221,5 @@ def _positive_definite(matrix: FloatArray) -> FloatArray:
     symmetric = (matrix + matrix.T) / 2.0
     eigenvalues, eigenvectors = np.linalg.eigh(symmetric)
     floor = max(float(np.max(np.abs(eigenvalues))) * 1e-10, 1e-12)
-    return (eigenvectors * np.maximum(eigenvalues, floor)) @ eigenvectors.T
+    projected = (eigenvectors * np.maximum(eigenvalues, floor)) @ eigenvectors.T
+    return np.asarray(projected, dtype=np.float64)
