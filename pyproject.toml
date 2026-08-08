@@ -32,7 +32,10 @@ dependencies = [
 api = ["fastapi>=0.110", "pydantic>=2.6", "uvicorn[standard]>=0.27"]
 excel = ["openpyxl>=3.1"]
 parquet = ["pyarrow>=14"]
-docs = ["mkdocs>=1.6"]
+docs = [
+  "mkdocs>=1.6",
+  "pymdown-extensions>=10.0",
+]
 frontend = ["streamlit>=1.40"]
 dev = [
   "bayesian-sgdlm[api,docs,excel,frontend]",
