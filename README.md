@@ -2,6 +2,10 @@
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Status: research alpha](https://img.shields.io/badge/status-research%20alpha-orange.svg)](CHANGELOG.md)
+[![Docker](https://img.shields.io/badge/container-Docker-2496ED?logo=docker&logoColor=white)](Dockerfile)
+
 
 A Python implementation of the Simultaneous Graphical Dynamic Linear Model (SGDLM)
 decouple/recouple algorithm from Gruber and West (2016). It provides sequential Bayesian
