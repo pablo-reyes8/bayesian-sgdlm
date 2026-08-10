@@ -163,8 +163,6 @@ ruff format --check .
 docker build -t bayesian-sgdlm .
 ```
 
-The old notebook remains under `notebooks/` as provenance for the original experiment. Production
-code lives only in `src/sgdlm`; the notebook is not the package's source of truth.
 
 ## Reference
 
